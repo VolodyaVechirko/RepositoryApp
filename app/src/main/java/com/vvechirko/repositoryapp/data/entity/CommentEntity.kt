@@ -9,4 +9,13 @@ data class CommentEntity(
         var name: String,
         var email: String,
         var body: String
-)
+) {
+        fun toMap(): Map<String, String> {
+                return mapOf(
+                        "postId" to postId,
+                        "name" to name,
+                        "email" to email,
+                        "body" to body
+                )
+        }
+}

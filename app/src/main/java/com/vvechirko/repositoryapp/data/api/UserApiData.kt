@@ -17,8 +17,8 @@ class UserApiData : DataSource<UserEntity> {
 
     override fun getAll(query: DataSource.Query<UserEntity>): Observable<List<UserEntity>> {
         if (query.has("id")) {
-            query.get("id")?.let {
-                return api.getUser(it)
+            query.get("id")?.let { id ->
+                return api.getUser(id)
                         .map { listOf(it) }
             } ?: throw IllegalArgumentException("Unsupported query $query for UserEntity")
         } else {

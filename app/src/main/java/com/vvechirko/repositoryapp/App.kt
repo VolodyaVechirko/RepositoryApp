@@ -3,6 +3,11 @@ package com.vvechirko.repositoryapp
 import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
+import android.util.Log
+import com.vvechirko.repositoryapp.data.ApiService
+import com.vvechirko.repositoryapp.data.api.Api
+import com.vvechirko.repositoryapp.data.entity.CommentEntity
+import io.reactivex.schedulers.Schedulers
 
 class App : Application() {
 
