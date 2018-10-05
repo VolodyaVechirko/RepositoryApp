@@ -11,4 +11,12 @@ data class UserEntity(
         var username: String,
         var phone: String? = null,
         var website: String? = null
-)
+) {
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return if (other is UserEntity) other.id == id else false
+    }
+}

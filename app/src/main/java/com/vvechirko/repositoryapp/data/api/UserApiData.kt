@@ -2,10 +2,10 @@ package com.vvechirko.repositoryapp.data.api
 
 import com.vvechirko.repositoryapp.data.ApiService
 import com.vvechirko.repositoryapp.data.DataSource
+import com.vvechirko.repositoryapp.data.Repository
 import com.vvechirko.repositoryapp.data.entity.UserEntity
 import io.reactivex.Completable
 import io.reactivex.Observable
-import java.lang.IllegalArgumentException
 
 class UserApiData : DataSource<UserEntity> {
 
@@ -16,17 +16,16 @@ class UserApiData : DataSource<UserEntity> {
     }
 
     override fun getAll(query: DataSource.Query<UserEntity>): Observable<List<UserEntity>> {
-        if (query.has("id")) {
-            query.get("id")?.let { id ->
-                return api.getUser(id)
-                        .map { listOf(it) }
+        when {
+            query.has(Repository.ID) -> query.get(Repository.ID)?.let { id ->
+                return api.getUser(id).map { listOf(it) }
             } ?: throw IllegalArgumentException("Unsupported query $query for UserEntity")
-        } else {
-            throw IllegalArgumentException("Unsupported query $query for UserEntity")
+
+            else -> throw IllegalArgumentException("Unsupported query $query for UserEntity")
         }
     }
 
-    override fun saveAll(list: List<UserEntity>): Completable {
+    override fun saveAll(list: List<UserEntity>): Observable<List<UserEntity>> {
         TODO("not implemented")
     }
 

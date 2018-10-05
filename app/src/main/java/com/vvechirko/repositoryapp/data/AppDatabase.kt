@@ -2,6 +2,8 @@ package com.vvechirko.repositoryapp.data
 
 import android.content.Context
 import androidx.room.*
+import com.vvechirko.repositoryapp.data.db.CommentDao
+import com.vvechirko.repositoryapp.data.db.PostDao
 import com.vvechirko.repositoryapp.data.db.UserDao
 import com.vvechirko.repositoryapp.data.entity.CommentEntity
 import com.vvechirko.repositoryapp.data.entity.PostEntity
@@ -21,6 +23,10 @@ import java.util.*
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun getUserDao(): UserDao
+
+    abstract fun getPostDao(): PostDao
+
+    abstract fun getCommentDao(): CommentDao
 
     companion object {
 

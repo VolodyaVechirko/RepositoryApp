@@ -6,12 +6,13 @@ import com.vvechirko.repositoryapp.data.db.DbData
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
-import kotlin.reflect.KClass
 
 object Repository {
 
     const val PAGE = "page"
     const val ID = "id"
+    const val USER_ID = "userId"
+    const val POST_ID = "postId"
 
     inline fun <reified T : Any> of(): Repo<T> {
         return Repo<T>(ApiData.of<T>(), DbData.of<T>())
@@ -25,9 +26,6 @@ object Repository {
 
 class Repo<T : Any>(val api: DataSource<T>, val db: DataSource<T>) : DataSource<T> {
 
-//        val api: DataSource<T> = apiData.of(clazz) as DataSource<T>
-//        val db: DataSource<T> = dbData.of(clazz) as DataSource<T>
-
     override fun getAll(): Observable<List<T>> {
         return Observable.concatArrayEager(
                 // get items from db first
@@ -39,11 +37,9 @@ class Repo<T : Any>(val api: DataSource<T>, val db: DataSource<T>) : DataSource<
                         api.getAll().subscribeOn(Schedulers.io())
                                 .flatMap { l ->
                                     // remove old items from db
-                                    db.removeAll().subscribeOn(Schedulers.io())
+                                    db.removeAll()
                                             // save new items from api to db
-                                            .andThen(db.saveAll(l).subscribeOn(Schedulers.io()))
-                                            // and return api items
-                                            .andThen(Observable.just(l))
+                                            .andThen(db.saveAll(l))
                                 }
                     else
                     // or return empty
@@ -52,15 +48,15 @@ class Repo<T : Any>(val api: DataSource<T>, val db: DataSource<T>) : DataSource<
         )
     }
 
-    override fun saveAll(list: List<T>): Completable {
-        return Completable.defer {
+    override fun saveAll(list: List<T>): Observable<List<T>> {
+        return Observable.defer {
             if (isNetworkAvailable())
             // save items to api first
                 api.saveAll(list).subscribeOn(Schedulers.io())
                         // save items to db
-                        .andThen(db.saveAll(list).subscribeOn(Schedulers.io()))
+                        .flatMap { db.saveAll(list) }
             else
-                Completable.error(IllegalAccessError("You are offline"))
+                Observable.error(IllegalAccessError("You are offline"))
         }
     }
 
@@ -70,7 +66,7 @@ class Repo<T : Any>(val api: DataSource<T>, val db: DataSource<T>) : DataSource<
             // remove items from api first
                 api.removeAll(list).subscribeOn(Schedulers.io())
                         // remove items from db
-                        .andThen(db.removeAll(list).subscribeOn(Schedulers.io()))
+                        .andThen(db.removeAll(list))
             else
                 Completable.error(IllegalAccessError("You are offline"))
         }
@@ -82,7 +78,7 @@ class Repo<T : Any>(val api: DataSource<T>, val db: DataSource<T>) : DataSource<
             // remove items from api first
                 api.removeAll().subscribeOn(Schedulers.io())
                         // remove items from db
-                        .andThen(db.removeAll().subscribeOn(Schedulers.io()))
+                        .andThen(db.removeAll())
             else
                 Completable.error(IllegalAccessError("You are offline"))
         }
@@ -100,14 +96,11 @@ class Repo<T : Any>(val api: DataSource<T>, val db: DataSource<T>) : DataSource<
 //                                .flatMap { applyPaging(it, query) }
                                 .flatMap { l ->
                                     // get old items from db
-                                    db.getAll(query).subscribeOn(Schedulers.io())
+                                    db.getAll(query)
                                             // remove old items from db
-                                            .flatMapCompletable { old ->
-                                                db.removeAll(old).subscribeOn(Schedulers.io())
-                                            } // save new items from api to db
-                                            .andThen(db.saveAll(l).subscribeOn(Schedulers.io()))
-                                            // and return api items
-                                            .andThen(Observable.just(l))
+                                            .flatMapCompletable { old -> db.removeAll(old) }
+                                            // save new items from api to db
+                                            .andThen(db.saveAll(l))
                                 }
                     else
                     // or return empty

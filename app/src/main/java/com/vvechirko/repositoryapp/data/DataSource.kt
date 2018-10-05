@@ -9,7 +9,7 @@ interface DataSource<T : Any> {
 
     fun getAll(query: Query<T>): Observable<List<T>>
 
-    fun saveAll(list: List<T>): Completable
+    fun saveAll(list: List<T>): Observable<List<T>>
 
     fun removeAll(list: List<T>): Completable
 

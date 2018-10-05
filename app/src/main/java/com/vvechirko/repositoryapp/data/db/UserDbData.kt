@@ -14,8 +14,9 @@ class UserDbData(val dao: UserDao) : DataSource<UserEntity> {
         return dao.getAll().toObservable()
     }
 
-    override fun saveAll(list: List<UserEntity>): Completable {
+    override fun saveAll(list: List<UserEntity>): Observable<List<UserEntity>> {
         return Completable.fromCallable { dao.insertAll(list) }
+                .andThen(Observable.just(list))
     }
 
     override fun removeAll(list: List<UserEntity>): Completable {
