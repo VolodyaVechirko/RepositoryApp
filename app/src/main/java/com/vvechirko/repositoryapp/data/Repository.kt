@@ -14,8 +14,8 @@ object Repository {
     const val USER_ID = "userId"
     const val POST_ID = "postId"
 
-    inline fun <reified T : Any> of(): Repo<T> {
-        return Repo<T>(ApiData.of<T>(), DbData.of<T>())
+    inline fun <reified Entity : Any> of(): Repo<Entity> {
+        return Repo<Entity>(ApiData.of(Entity::class), DbData.of(Entity::class))
     }
 
     fun clearDatabase(): Completable {
@@ -24,9 +24,9 @@ object Repository {
     }
 }
 
-class Repo<T : Any>(val api: DataSource<T>, val db: DataSource<T>) : DataSource<T> {
+class Repo<Entity : Any>(val api: DataSource<Entity>, val db: DataSource<Entity>) : DataSource<Entity> {
 
-    override fun getAll(): Observable<List<T>> {
+    override fun getAll(): Observable<List<Entity>> {
         return Observable.concatArrayEager(
                 // get items from db first
                 db.getAll().subscribeOn(Schedulers.io()),
@@ -48,7 +48,7 @@ class Repo<T : Any>(val api: DataSource<T>, val db: DataSource<T>) : DataSource<
         )
     }
 
-    override fun saveAll(list: List<T>): Observable<List<T>> {
+    override fun saveAll(list: List<Entity>): Observable<List<Entity>> {
         return Observable.defer {
             if (isNetworkAvailable())
             // save items to api first
@@ -60,7 +60,7 @@ class Repo<T : Any>(val api: DataSource<T>, val db: DataSource<T>) : DataSource<
         }
     }
 
-    override fun removeAll(list: List<T>): Completable {
+    override fun removeAll(list: List<Entity>): Completable {
         return Completable.defer {
             if (isNetworkAvailable())
             // remove items from api first
@@ -84,7 +84,7 @@ class Repo<T : Any>(val api: DataSource<T>, val db: DataSource<T>) : DataSource<
         }
     }
 
-    override fun getAll(query: DataSource.Query<T>): Observable<List<T>> {
+    override fun getAll(query: DataSource.Query<Entity>): Observable<List<Entity>> {
         return Observable.concatArrayEager(
                 // get items from db first
                 db.getAll(query).subscribeOn(Schedulers.io()),
@@ -109,7 +109,7 @@ class Repo<T : Any>(val api: DataSource<T>, val db: DataSource<T>) : DataSource<
         )
     }
 
-//    private fun applyPaging(data: List<T>, query: DataSource.Query<T>): Observable<List<T>> {
+//    private fun applyPaging(data: List<Entity>, query: DataSource.Query<Entity>): Observable<List<Entity>> {
 //        return Observable.fromIterable(data)
 //                .map {
 //                    if (it is Pagingable) {

@@ -4,15 +4,16 @@ import com.vvechirko.repositoryapp.data.DataSource
 import com.vvechirko.repositoryapp.data.entity.CommentEntity
 import com.vvechirko.repositoryapp.data.entity.PostEntity
 import com.vvechirko.repositoryapp.data.entity.UserEntity
+import kotlin.reflect.KClass
 
 object ApiData {
 
-    inline fun <reified T : Any> of(): DataSource<T> {
-        return when (T::class) {
-            UserEntity::class -> UserApiData() as DataSource<T>
-            PostEntity::class -> PostApiData() as DataSource<T>
-            CommentEntity::class -> CommentApiData() as DataSource<T>
+    fun <Entity : Any> of(clazz: KClass<*>): DataSource<Entity> {
+        return when (clazz) {
+            UserEntity::class -> UserApiData()
+            PostEntity::class -> PostApiData()
+            CommentEntity::class -> CommentApiData()
             else -> throw IllegalArgumentException("Unsupported data type")
-        }
+        } as DataSource<Entity>
     }
 }

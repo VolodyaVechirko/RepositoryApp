@@ -7,18 +7,19 @@ import com.vvechirko.repositoryapp.data.DataSource
 import com.vvechirko.repositoryapp.data.entity.CommentEntity
 import com.vvechirko.repositoryapp.data.entity.PostEntity
 import com.vvechirko.repositoryapp.data.entity.UserEntity
+import kotlin.reflect.KClass
 
 object DbData {
 
     val db: AppDatabase by lazy { AppDatabase.getInstance(App.appContext()) }
 
-    inline fun <reified T : Any> of(): DataSource<T> {
-        return when (T::class) {
-            UserEntity::class -> UserDbData(db.getUserDao()) as DataSource<T>
-            PostEntity::class -> PostDbData(db.getPostDao()) as DataSource<T>
-            CommentEntity::class -> CommentDbData(db.getCommentDao()) as DataSource<T>
+    fun <Entity : Any> of(clazz: KClass<*>): DataSource<Entity> {
+        return when (clazz) {
+            UserEntity::class -> UserDbData(db.getUserDao())
+            PostEntity::class -> PostDbData(db.getPostDao())
+            CommentEntity::class -> CommentDbData(db.getCommentDao())
             else -> throw IllegalArgumentException("Unsupported data type")
-        }
+        } as DataSource<Entity>
     }
 
     fun clearDb() {
